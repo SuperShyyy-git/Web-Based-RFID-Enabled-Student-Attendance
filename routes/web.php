@@ -152,3 +152,6 @@ Route::middleware(['authmac'])->group(function () {
 
 });
 
+// Public Machine Route (for testing/demo)
+Route::view('/machine', 'page.machine.index')->name('machine');
+

@@ -8,7 +8,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="close"></button>
             </div>
             <div class="modal-body">
-                <form id="edit-student-form" action="{{route('process-edit-student-record')}}" method="POST">
+                <form id="edit-multiple-student-form" action="{{route('process-edit-student-record')}}" method="POST">
                     @csrf
                     @method('PUT')
 
@@ -29,8 +29,8 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="edit-student-department" class="form-label">Department</label>
-                                <select name="department-id" id="edit-student-department" class="form-control">
+                                <label for="multi-edit-department" class="form-label">Department</label>
+                                <select name="department-id" id="multi-edit-department" class="form-control">
                                     <option value="" disabled selected>Select Department</option>
                                     @foreach($departments as $department)
                                         <option value="{{ $department->department_id }}">{{ $department->department_name }}
@@ -41,8 +41,8 @@
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="edit-student-program" class="form-label">Program</label>
-                                <select name="program-id" id="edit-student-program" class="form-control">
+                                <label for="multi-edit-program" class="form-label">Program</label>
+                                <select name="program-id" id="multi-edit-program" class="form-control">
                                     <option value="" disabled selected>Select Program</option>
                                     @foreach($programs as $program)
                                         <option value="{{ $program->program_id }}"
@@ -58,8 +58,8 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="edit-student-year-level" class="form-label">Year Level</label>
-                                <select name="year-level-id" id="edit-student-year-level" class="form-control">
+                                <label for="multi-edit-year-level" class="form-label">Year Level</label>
+                                <select name="year-level-id" id="multi-edit-year-level" class="form-control">
                                     <option value="" disabled selected>Select Year Level</option>
                                     @foreach($yearlevels as $yearlevel)
                                         <option value="{{ $yearlevel->year_level_id }}">{{ $yearlevel->year_level_name }}
@@ -71,8 +71,8 @@
 
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="edit-student-section" class="form-label">Section</label>
-                                <select name="section-id" id="edit-student-section" class="form-control">
+                                <label for="multi-edit-section" class="form-label">Section</label>
+                                <select name="section-id" id="multi-edit-section" class="form-control">
                                     <option value="" disabled selected>Select Section</option>
                                     @foreach($sections as $section)
                                         <option value="{{ $section->section_id }}">{{ $section->section_name }}
@@ -92,28 +92,28 @@
     </div>
 </div>
 
-<!-- Keep the rest of your modal as-is up to this point -->
-
 <!-- JavaScript for filtering programs based on department -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const departmentSelect = document.getElementById('student-department');
-        const programSelect = document.getElementById('program');
-        const allProgramOptions = Array.from(programSelect.options);
+        const multiDepartmentSelect = document.getElementById('multi-edit-department');
+        const multiProgramSelect = document.getElementById('multi-edit-program');
+        
+        if (!multiDepartmentSelect || !multiProgramSelect) return;
+        
+        const allMultiProgramOptions = Array.from(multiProgramSelect.options);
 
-        departmentSelect.addEventListener('change', function () {
+        multiDepartmentSelect.addEventListener('change', function () {
             const selectedDeptId = this.value;
 
             // Clear and reset the program dropdown
-            programSelect.innerHTML = '<option value="" disabled selected>Select Program</option>';
+            multiProgramSelect.innerHTML = '<option value="" disabled selected>Select Program</option>';
 
-            allProgramOptions.forEach(option => {
+            allMultiProgramOptions.forEach(option => {
                 const deptId = option.getAttribute('data-department-id');
                 if (deptId === selectedDeptId) {
-                    programSelect.appendChild(option);
+                    multiProgramSelect.appendChild(option.cloneNode(true));
                 }
             });
         });
     });
 </script>
-

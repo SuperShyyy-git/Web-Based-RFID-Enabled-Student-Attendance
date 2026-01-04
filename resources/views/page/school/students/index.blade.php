@@ -135,18 +135,20 @@
             const searchInput = document.getElementById('search');
             const tableRows = document.querySelectorAll('tbody tr');
 
-            searchInput.addEventListener('keyup', function () {
-                const query = searchInput.value.toLowerCase();
+            if (searchInput) {
+                searchInput.addEventListener('keyup', function () {
+                    const query = searchInput.value.toLowerCase();
 
-                tableRows.forEach(row => {
-                    const rowText = row.textContent.toLowerCase();
-                    if (rowText.includes(query)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
+                    tableRows.forEach(row => {
+                        const rowText = row.textContent.toLowerCase();
+                        if (rowText.includes(query)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
                 });
-            });
+            }
         });
     </script>
 @endsection

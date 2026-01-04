@@ -22,25 +22,28 @@ document.querySelectorAll('.student-checkbox').forEach(checkbox => {
 });
 
 // Handle "Select All" checkbox
-document.getElementById('select-all-checkbox').addEventListener('change', function () {
-    const isChecked = this.checked;
+const selectAllCheckbox = document.getElementById('select-all-checkbox');
+if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener('change', function () {
+        const isChecked = this.checked;
 
-    document.querySelectorAll('.student-checkbox').forEach(checkbox => {
-        checkbox.checked = isChecked;
-        const recordId = checkbox.value;
-        const recordName = checkbox.getAttribute('data-name');
+        document.querySelectorAll('.student-checkbox').forEach(checkbox => {
+            checkbox.checked = isChecked;
+            const recordId = checkbox.value;
+            const recordName = checkbox.getAttribute('data-name');
 
-        if (isChecked) {
-            if (!selectedRecordIds.includes(recordId)) {
-                selectedRecordIds.push(recordId);
-                selectedRecordNames.push(recordName);
+            if (isChecked) {
+                if (!selectedRecordIds.includes(recordId)) {
+                    selectedRecordIds.push(recordId);
+                    selectedRecordNames.push(recordName);
+                }
+            } else {
+                selectedRecordIds = [];
+                selectedRecordNames = [];
             }
-        } else {
-            selectedRecordIds = [];
-            selectedRecordNames = [];
-        }
+        });
     });
-});
+}
 
 // Update "Select All" checkbox state
 function updateSelectAllCheckboxState() {
@@ -48,8 +51,10 @@ function updateSelectAllCheckboxState() {
     const checkedCheckboxes = document.querySelectorAll('.student-checkbox:checked').length;
 
     const selectAllCheckbox = document.getElementById('select-all-checkbox');
-    selectAllCheckbox.checked = totalCheckboxes === checkedCheckboxes;
-    selectAllCheckbox.indeterminate = checkedCheckboxes > 0 && checkedCheckboxes < totalCheckboxes;
+    if (selectAllCheckbox) {
+        selectAllCheckbox.checked = totalCheckboxes === checkedCheckboxes;
+        selectAllCheckbox.indeterminate = checkedCheckboxes > 0 && checkedCheckboxes < totalCheckboxes;
+    }
 }
 
 // Display selected records with pagination
@@ -59,7 +64,9 @@ function displaySelectedRecords() {
     const recordsToDisplay = selectedRecordNames.slice(startIndex, endIndex);
 
     const recordsList = document.getElementById('selected-records-list');
-    recordsList.innerHTML = recordsToDisplay.map(name => `<p>${name}</p>`).join('');
+    if (recordsList) {
+        recordsList.innerHTML = recordsToDisplay.map(name => `<p>${name}</p>`).join('');
+    }
 
     generatePaginationControls();
 }
@@ -67,6 +74,8 @@ function displaySelectedRecords() {
 // Generate pagination controls
 function generatePaginationControls() {
     const paginationControls = document.getElementById('pagination-controls');
+    if (!paginationControls) return;
+
     paginationControls.innerHTML = '';
 
     const totalPages = Math.ceil(selectedRecordNames.length / recordsPerPage);
@@ -89,40 +98,58 @@ function generatePaginationControls() {
 }
 
 // Handle "Delete Multiple" button click
-document.getElementById('delete-multiple-btn').addEventListener('click', function () {
-    if (selectedRecordIds.length === 0) {
-        Swal.fire({
-            title: 'No Record Selected',
-            text: 'Please select at least one record before deleting.',
-            icon: 'warning',
-            confirmButtonColor: '#3085d6',
-        });
-    } else {
-        document.getElementById('delete-multiple-record-ids').value = JSON.stringify(selectedRecordIds);
+const deleteMultipleBtn = document.getElementById('delete-multiple-btn');
+if (deleteMultipleBtn) {
+    deleteMultipleBtn.addEventListener('click', function () {
+        if (selectedRecordIds.length === 0) {
+            Swal.fire({
+                title: 'No Record Selected',
+                text: 'Please select at least one record before deleting.',
+                icon: 'warning',
+                confirmButtonColor: '#3085d6',
+            });
+        } else {
+            const deleteIdsInput = document.getElementById('delete-multiple-record-ids');
+            if (deleteIdsInput) {
+                deleteIdsInput.value = JSON.stringify(selectedRecordIds);
+            }
 
-        displaySelectedRecords();
+            displaySelectedRecords();
 
-        const modal = new bootstrap.Modal(document.getElementById('delete-multiple-student-modal'));
-        modal.show();
-    }
-});
+            const modalEl = document.getElementById('delete-multiple-student-modal');
+            if (modalEl) {
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            }
+        }
+    });
+}
 
 // Password Visibility Toggles (previous code)
 function togglePasswordVisibility(toggleId, passwordId) {
-    document.getElementById(toggleId).addEventListener("click", function () {
-        let passwordField = document.getElementById(passwordId);
-        let icon = this.querySelector("i");
+    const toggleBtn = document.getElementById(toggleId);
+    if (toggleBtn) {
+        toggleBtn.addEventListener("click", function () {
+            let passwordField = document.getElementById(passwordId);
+            if (!passwordField) return;
 
-        if (passwordField.type === "password") {
-            passwordField.type = "text";
-            icon.classList.remove("bx-hide");
-            icon.classList.add("bx-show");
-        } else {
-            passwordField.type = "password";
-            icon.classList.remove("bx-show");
-            icon.classList.add("bx-hide");
-        }
-    });
+            let icon = this.querySelector("i");
+
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                if (icon) {
+                    icon.classList.remove("bx-hide");
+                    icon.classList.add("bx-show");
+                }
+            } else {
+                passwordField.type = "password";
+                if (icon) {
+                    icon.classList.remove("bx-show");
+                    icon.classList.add("bx-hide");
+                }
+            }
+        });
+    }
 }
 
 togglePasswordVisibility("toggle-multiple-student-password", "confirm-multiple-student-password");

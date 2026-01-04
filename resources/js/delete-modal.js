@@ -3,50 +3,56 @@ document.addEventListener("DOMContentLoaded", function () {
     // Delete Department
     document.querySelectorAll(".delete-department-btn").forEach(button => {
         button.addEventListener("click", function () {
-            document.getElementById("delete-department-id").value = this.getAttribute("data-id");
+            const el = document.getElementById("delete-department-id");
+            if (el) el.value = this.getAttribute("data-id");
         });
     });
 
     // Delete Instructor
     document.querySelectorAll(".delete-instructor-btn").forEach(button => {
         button.addEventListener("click", function () {
-            document.getElementById("delete-instructor-id").value = this.getAttribute("data-id");
+            const el = document.getElementById("delete-instructor-id");
+            if (el) el.value = this.getAttribute("data-id");
         });
     });
 
     // Delete Program
     document.querySelectorAll(".delete-program-btn").forEach(button => {
         button.addEventListener("click", function () {
-            document.getElementById("delete-program-id").value = this.getAttribute("data-id");
+            const el = document.getElementById("delete-program-id");
+            if (el) el.value = this.getAttribute("data-id");
         });
     });
 
     // Delete Year level
     document.querySelectorAll(".delete-year-level-btn").forEach(button => {
         button.addEventListener("click", function () {
-            document.getElementById("delete-year-level-id").value = this.getAttribute("data-id");
+            const el = document.getElementById("delete-year-level-id");
+            if (el) el.value = this.getAttribute("data-id");
         });
     });
 
     // Delete School Year
     document.querySelectorAll(".delete-school-year-btn").forEach(button => {
         button.addEventListener("click", function () {
-            document.getElementById("delete-school-year-id").value = this.getAttribute("data-id");
+            const el = document.getElementById("delete-school-year-id");
+            if (el) el.value = this.getAttribute("data-id");
         });
-    }
-    );
+    });
 
-     // Delete Section
+    // Delete Section
     document.querySelectorAll(".delete-section-btn").forEach(button => {
         button.addEventListener("click", function () {
-            document.getElementById("delete-section-id").value = this.getAttribute("data-id");
+            const el = document.getElementById("delete-section-id");
+            if (el) el.value = this.getAttribute("data-id");
         });
     });
 
     //Delete Record
     document.querySelectorAll(".delete-record-btn").forEach(button => {
-        button.addEventListener("click", function(){
-            document.getElementById("delete-record-id").value = this.getAttribute("data-id");
+        button.addEventListener("click", function () {
+            const el = document.getElementById("delete-record-id");
+            if (el) el.value = this.getAttribute("data-id");
         });
     });
 
@@ -54,18 +60,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Password Visibility Toggles
     function togglePasswordVisibility(toggleId, passwordId) {
-        document.getElementById(toggleId).addEventListener("click", function () {
+        const toggleBtn = document.getElementById(toggleId);
+        if (!toggleBtn) return;
+
+        toggleBtn.addEventListener("click", function () {
             let passwordField = document.getElementById(passwordId);
+            if (!passwordField) return;
+
             let icon = this.querySelector("i");
-            
+
             if (passwordField.type === "password") {
                 passwordField.type = "text";
-                icon.classList.remove("bx-hide");
-                icon.classList.add("bx-show");
+                if (icon) {
+                    icon.classList.remove("bx-hide");
+                    icon.classList.add("bx-show");
+                }
             } else {
                 passwordField.type = "password";
-                icon.classList.remove("bx-show");
-                icon.classList.add("bx-hide");
+                if (icon) {
+                    icon.classList.remove("bx-show");
+                    icon.classList.add("bx-hide");
+                }
             }
         });
     }

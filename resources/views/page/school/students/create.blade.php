@@ -1,7 +1,7 @@
 <!-- Create Student Modal -->
 <div class="modal fade" id="create-student-modal" tabindex="-1" aria-labelledby="create-student-modal-label"
     aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="create-student-modal-label">Create Student Record</h5>
@@ -130,21 +130,33 @@
                     </div>
 
                     <div class="row">
-    <<div class="col-md-12 mb-3">
-    <label class="form-label">Face Image</label>
-    <video id="camera" width="100%" autoplay style="border:1px solid #ccc; border-radius:5px;"></video>
-    <canvas id="snapshot" style="display:none;"></canvas>
-    <input type="hidden" name="face_image" id="face_image_base64">
-    <button type="button" class="btn btn-primary mt-2" id="capture-btn">Capture Photo</button>
-    
-    <!-- Placeholder container -->
-    <div id="captured-preview-container" 
-         style="margin-top:10px; border:1px solid #ccc; border-radius:5px; 
-                height:200px; display:flex; align-items:center; justify-content:center; 
-                color:#888; font-style:italic; overflow:hidden;">
-        No photo taken
+    <div class="col-md-12 mb-3">
+        <label class="form-label">Face Image</label>
+        
+        <!-- Camera container with face mesh overlay -->
+        <div style="position: relative; border-radius: 8px; overflow: hidden; background: #000;">
+            <video id="camera" width="100%" autoplay muted playsinline style="display: block;"></video>
+            <canvas id="faceMeshCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;"></canvas>
+        </div>
+        
+        <div class="d-flex align-items-center mt-2">
+            <button type="button" class="btn btn-primary" id="capture-btn">
+                📷 Capture Photo
+            </button>
+            <span class="ms-3 text-muted" id="face-status">Loading face detection...</span>
+        </div>
+        
+        <canvas id="snapshot" style="display:none;"></canvas>
+        <input type="hidden" name="face_image" id="face_image_base64">
+        
+        <!-- Captured preview -->
+        <div id="captured-preview-container" 
+             style="margin-top:10px; border:2px dashed #ccc; border-radius:8px; 
+                    height:150px; display:flex; align-items:center; justify-content:center; 
+                    color:#888; font-style:italic; overflow:hidden; background: #f8f9fa;">
+            No photo captured yet
+        </div>
     </div>
-</div>
 </div>
 
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -158,8 +170,6 @@
     </div>
 </div>
 
-<!-- Include jQuery only once -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
 $(document).ready(function () {
@@ -247,43 +257,252 @@ $(document).ready(function () {
     // Program or Year Level change -> render sections
     $('#student-program, #student-year-level').on('change', renderSections);
 
-    // Camera setup
+    // Camera and Face Detection setup
     let video = document.getElementById('camera');
     let canvas = document.getElementById('snapshot');
+    let faceMeshCanvas = document.getElementById('faceMeshCanvas');
     let captureBtn = document.getElementById('capture-btn');
     let faceImageInput = document.getElementById('face_image_base64');
+    let faceStatus = document.getElementById('face-status');
+    let stream = null;
+    let detectionInterval = null;
 
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.enumerateDevices()
-        .then(devices => {
-            let videoDevices = devices.filter(d => d.kind === 'videoinput');
-            let usbCamera = videoDevices.find(d => d.label.toLowerCase().includes("usb"));
-            let cameraId = usbCamera ? usbCamera.deviceId : (videoDevices[0] ? videoDevices[0].deviceId : null);
-            if (!cameraId) throw new Error("No camera found");
-            return navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: cameraId } } });
-        })
-        .then(stream => { video.srcObject = stream; video.play(); })
-        .catch(err => { console.error("Camera error: ", err); alert("Cannot access camera. Please allow camera permission."); });
+    // Initialize camera when modal opens
+    $('#create-student-modal').on('shown.bs.modal', async function () {
+        try {
+            // Check if faceapi is available
+            if (typeof faceapi === 'undefined') {
+                console.error('face-api.js not loaded!');
+                faceStatus.textContent = '❌ Face detection library not loaded';
+                faceStatus.style.color = '#dc3545';
+                // Still start camera even without face detection
+                stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+                video.srcObject = stream;
+                await video.play();
+                return;
+            }
+            
+            faceStatus.textContent = '📷 Starting camera...';
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { width: 640, height: 480, facingMode: 'user' } 
+            });
+            video.srcObject = stream;
+            
+            await new Promise(resolve => {
+                video.onloadedmetadata = () => {
+                    video.play();
+                    resolve();
+                };
+            });
+            
+            // Set canvas size to match video
+            faceMeshCanvas.width = video.videoWidth;
+            faceMeshCanvas.height = video.videoHeight;
+            
+            // Load face detection models
+            faceStatus.textContent = '⏳ Loading face detection models...';
+            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+            
+            console.log('Loading TinyFaceDetector model...');
+            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+            console.log('Loading FaceLandmark68Net model...');
+            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+            console.log('Models loaded successfully');
+            
+            faceStatus.textContent = '✅ Face detection ready';
+            faceStatus.style.color = '#28a745';
+            
+            // Start detection loop with setInterval (slightly slower to reduce CPU load)
+            detectionInterval = setInterval(detectFaces, 150);
+            
+        } catch (err) {
+            console.error('Camera/Face detection error:', err);
+            faceStatus.textContent = '❌ Error: ' + err.message;
+            faceStatus.style.color = '#dc3545';
+        }
+    });
+
+    // Store last detection to prevent blinking
+    let lastDetections = null;
+    let noFaceCount = 0;
+
+    // Face detection function (same as machine page)
+    async function detectFaces() {
+        if (!video || video.paused || video.ended) return;
+        
+        // Match canvas to displayed video size
+        const displaySize = { width: video.offsetWidth, height: video.offsetHeight };
+        
+        if (faceMeshCanvas.width !== displaySize.width || faceMeshCanvas.height !== displaySize.height) {
+            faceMeshCanvas.width = displaySize.width;
+            faceMeshCanvas.height = displaySize.height;
+        }
+        
+        const ctx = faceMeshCanvas.getContext('2d');
+        
+        try {
+            // Detect faces with landmarks
+            const detections = await faceapi
+                .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks();
+            
+            // Resize results to match display size
+            const resizedDetections = faceapi.resizeResults(detections, displaySize);
+            
+            if (resizedDetections.length > 0) {
+                // Face found - draw it
+                ctx.clearRect(0, 0, faceMeshCanvas.width, faceMeshCanvas.height);
+                resizedDetections.forEach(det => {
+                    drawWhiteMesh(ctx, det.landmarks.positions);
+                });
+                lastDetections = resizedDetections;
+                noFaceCount = 0;
+                faceStatus.textContent = '✅ Face detected - Ready to capture!';
+                faceStatus.style.color = '#28a745';
+            } else {
+                noFaceCount++;
+                // Only clear after 5 consecutive frames with no face (prevents flickering)
+                if (noFaceCount > 5) {
+                    ctx.clearRect(0, 0, faceMeshCanvas.width, faceMeshCanvas.height);
+                    lastDetections = null;
+                    faceStatus.textContent = '👤 Position your face in the camera';
+                    faceStatus.style.color = '#6c757d';
+                } else if (lastDetections) {
+                    // Keep showing last detection to prevent blink
+                    ctx.clearRect(0, 0, faceMeshCanvas.width, faceMeshCanvas.height);
+                    lastDetections.forEach(det => {
+                        drawWhiteMesh(ctx, det.landmarks.positions);
+                    });
+                }
+            }
+        } catch (err) {
+            console.error('Detection error:', err);
+        }
+    }
+
+    // Draw white triangulated mesh (same as machine page)
+    function drawWhiteMesh(ctx, points) {
+        const triangles = [
+            // Forehead/eyebrows
+            [17, 18, 37], [18, 19, 38], [19, 20, 39], [20, 21, 39],
+            [22, 23, 42], [23, 24, 43], [24, 25, 44], [25, 26, 45],
+            [17, 36, 37], [26, 45, 16],
+            // Between eyebrows
+            [21, 22, 27], [21, 27, 39], [22, 27, 42],
+            // Nose bridge to eyes
+            [27, 28, 39], [27, 28, 42],
+            [28, 29, 39], [28, 29, 42],
+            [39, 28, 40], [42, 28, 47],
+            // Nose
+            [29, 30, 31], [29, 30, 35],
+            [30, 31, 32], [30, 32, 33], [30, 33, 34], [30, 34, 35],
+            // Eyes
+            [36, 37, 41], [37, 38, 40], [38, 39, 40], [40, 41, 37],
+            [42, 43, 47], [43, 44, 46], [44, 45, 46], [46, 47, 43],
+            // Cheeks - left side
+            [0, 1, 36], [1, 2, 41], [2, 3, 31], [3, 4, 48],
+            [4, 5, 48], [5, 6, 59], [6, 7, 58], [7, 8, 57],
+            // Cheeks - right side
+            [16, 15, 45], [15, 14, 46], [14, 13, 35], [13, 12, 54],
+            [12, 11, 54], [11, 10, 55], [10, 9, 56], [9, 8, 57],
+            // Nose to cheeks
+            [31, 40, 41], [31, 41, 2], [35, 47, 46], [35, 46, 14],
+            [31, 32, 48], [32, 33, 51], [33, 34, 51], [34, 35, 54],
+            [48, 49, 31], [49, 50, 32], [50, 51, 33], [51, 52, 34], [52, 53, 35], [53, 54, 35],
+            // Mouth area
+            [48, 59, 60], [59, 58, 67], [58, 57, 66], [57, 56, 65],
+            [54, 55, 64], [55, 56, 65],
+            // Inner mouth connections
+            [60, 61, 67], [61, 62, 66], [62, 63, 65], [63, 64, 65],
+        ];
+
+        // Style - white with glow effect
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.shadowColor = 'white';
+        ctx.shadowBlur = 3;
+        
+        // Draw all triangle lines
+        triangles.forEach(tri => {
+            const [a, b, c] = tri;
+            if (points[a] && points[b] && points[c]) {
+                ctx.beginPath();
+                ctx.moveTo(points[a].x, points[a].y);
+                ctx.lineTo(points[b].x, points[b].y);
+                ctx.lineTo(points[c].x, points[c].y);
+                ctx.closePath();
+                ctx.stroke();
+            }
+        });
+        
+        // Draw bright white dots at key landmark points
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = 'white';
+        
+        // Key points: jawline, eyebrows, eyes, nose, mouth
+        const dotPoints = [
+            0, 2, 4, 6, 8, 10, 12, 14, 16,  // Jawline
+            17, 19, 21, 22, 24, 26,          // Eyebrows
+            36, 37, 38, 39, 40, 41,          // Left eye
+            42, 43, 44, 45, 46, 47,          // Right eye
+            27, 28, 29, 30, 31, 33, 35,      // Nose
+            48, 51, 54, 57, 60, 62, 64, 66   // Mouth
+        ];
+        
+        dotPoints.forEach(i => {
+            if (points[i]) {
+                ctx.beginPath();
+                ctx.arc(points[i].x, points[i].y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+        
+        // Reset shadow
+        ctx.shadowBlur = 0;
     }
 
     // Capture photo
-    captureBtn.addEventListener('click', function () {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-        let dataUrl = canvas.toDataURL('image/png');
-        faceImageInput.value = dataUrl;
+    if (captureBtn) {
+        captureBtn.addEventListener('click', function () {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            let dataUrl = canvas.toDataURL('image/png');
+            faceImageInput.value = dataUrl;
 
-        document.getElementById('captured-preview-container').innerHTML =
-            `<img src="${dataUrl}" alt="Captured Image" style="display:block; max-width:100%; border-radius:5px;" />`;
-    });
+            document.getElementById('captured-preview-container').innerHTML =
+                `<img src="${dataUrl}" alt="Captured Image" style="display:block; max-width:100%; max-height:150px; border-radius:5px;" />`;
+            
+            faceStatus.textContent = '📸 Photo captured!';
+            faceStatus.style.color = '#28a745';
+        });
+    }
 
-    // Reset when modal closes
+    // Stop camera when modal closes
     $('#create-student-modal').on('hidden.bs.modal', function () {
-        faceImageInput.value = '';
-        document.getElementById('captured-preview-container').innerHTML = 'No photo taken';
+        // Stop detection interval
+        if (detectionInterval) {
+            clearInterval(detectionInterval);
+            detectionInterval = null;
+        }
+        // Stop camera stream
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        // Clear canvas
+        if (faceMeshCanvas) {
+            const ctx = faceMeshCanvas.getContext('2d');
+            ctx.clearRect(0, 0, faceMeshCanvas.width, faceMeshCanvas.height);
+        }
+        // Reset UI
+        if (faceImageInput) faceImageInput.value = '';
+        document.getElementById('captured-preview-container').innerHTML = 'No photo captured yet';
+        if (faceStatus) {
+            faceStatus.textContent = 'Loading face detection...';
+            faceStatus.style.color = '';
+        }
     });
 
 });
 </script>
-

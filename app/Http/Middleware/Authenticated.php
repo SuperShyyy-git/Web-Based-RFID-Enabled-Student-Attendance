@@ -17,7 +17,8 @@ class Authenticated
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check()) {
+        // Check both web and machine guards since login uses specific guards
+        if (!Auth::guard('web')->check() && !Auth::guard('machine')->check()) {
             return Redirect::route('login')->with('error', 'You are not logged in.');
         }
         return $next($request);
