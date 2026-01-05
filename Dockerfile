@@ -12,8 +12,10 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     unzip \
-    nodejs \
-    npm
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions including gd
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -55,13 +57,24 @@ RUN npm run build
 RUN mkdir -p storage/framework/{sessions,views,cache,testing} storage/logs bootstrap/cache \
     && chmod -R 777 storage bootstrap/cache
 
-# Run Laravel optimizations
-RUN php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
+# Expose port (Railway uses PORT env variable)
+EXPOSE 8080
 
-# Expose port
-EXPOSE ${PORT:-8080}
+# Create startup script
+RUN echo '#!/bin/bash\n\
+set -e\n\
+echo "Starting application..."\n\
+php artisan config:clear\n\
+echo "Running migrations..."\n\
+php artisan migrate --force\n\
+echo "Running seeders..."\n\
+php artisan db:seed --class=AdminSeeder --force || true\n\
+echo "Caching routes and views..."\n\
+php artisan route:cache\n\
+php artisan view:cache\n\
+echo "Starting server on port ${PORT:-8080}..."\n\
+exec php artisan serve --host=0.0.0.0 --port=${PORT:-8080}\n\
+' > /app/start.sh && chmod +x /app/start.sh
 
 # Start command
-CMD php artisan config:clear && php artisan migrate --force && php artisan db:seed --class=AdminSeeder --force && php artisan route:cache && php artisan view:cache && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
+CMD ["/app/start.sh"]
