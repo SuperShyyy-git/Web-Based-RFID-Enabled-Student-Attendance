@@ -2,7 +2,9 @@
 
 @section('title', 'Login | RCI AMS')
 
+@push('styles')
 @vite(['resources/css/login.blade.css'])
+@endpush
 
 @section('content')
     <div class="login-container">
