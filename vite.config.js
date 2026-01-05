@@ -6,6 +6,7 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
+                // CSS files
                 'resources/css/app.css',
                 'resources/css/login.blade.css',
                 'resources/css/change-password.blade.css',
@@ -21,7 +22,12 @@ export default defineConfig({
                 'resources/css/sidebar.blade.css',
                 'resources/css/student.blade.css',
                 'resources/css/yearlevels.blade.css',
-                'resources/js/app.js'
+                // JS files
+                'resources/js/app.js',
+                'resources/js/delete-modal.js',
+                'resources/js/delete-multiple-modal.js',
+                'resources/js/edit-modal.js',
+                'resources/js/edit-multiple-modal.js'
             ],
             refresh: true,
         }),
