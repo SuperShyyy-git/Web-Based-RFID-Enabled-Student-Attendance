@@ -1,0 +1,107 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-Dmm3cVpc.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/css/change-password.blade.css": {
+    "file": "assets/change-password-B3PSbF5b.css",
+    "src": "resources/css/change-password.blade.css",
+    "isEntry": true
+  },
+  "resources/css/confirm-otp-blade.css": {
+    "file": "assets/confirm-otp-blade-Blwg5U6b.css",
+    "src": "resources/css/confirm-otp-blade.css",
+    "isEntry": true
+  },
+  "resources/css/confirm-password.blade.css": {
+    "file": "assets/confirm-password-CkGGKogD.css",
+    "src": "resources/css/confirm-password.blade.css",
+    "isEntry": true
+  },
+  "resources/css/dashboard.blade.css": {
+    "file": "assets/dashboard-B8ZdxoKK.css",
+    "src": "resources/css/dashboard.blade.css",
+    "isEntry": true
+  },
+  "resources/css/department.blade.css": {
+    "file": "assets/department-2MaHfvTT.css",
+    "src": "resources/css/department.blade.css",
+    "isEntry": true
+  },
+  "resources/css/edit-account.blade.css": {
+    "file": "assets/edit-account-ntFHH8Wj.css",
+    "src": "resources/css/edit-account.blade.css",
+    "isEntry": true
+  },
+  "resources/css/home.blade.css": {
+    "file": "assets/home-Bf4ZWU_G.css",
+    "src": "resources/css/home.blade.css",
+    "isEntry": true
+  },
+  "resources/css/login.blade.css": {
+    "file": "assets/login-9VyAP5GW.css",
+    "src": "resources/css/login.blade.css",
+    "isEntry": true
+  },
+  "resources/css/programs.blade.css": {
+    "file": "assets/programs-DWj462k4.css",
+    "src": "resources/css/programs.blade.css",
+    "isEntry": true
+  },
+  "resources/css/school-year.blade.css": {
+    "file": "assets/school-year-1BFLHawH.css",
+    "src": "resources/css/school-year.blade.css",
+    "isEntry": true
+  },
+  "resources/css/sections.blade.css": {
+    "file": "assets/sections-jW7Eb6bh.css",
+    "src": "resources/css/sections.blade.css",
+    "isEntry": true
+  },
+  "resources/css/sidebar.blade.css": {
+    "file": "assets/sidebar-DWLWTNvW.css",
+    "src": "resources/css/sidebar.blade.css",
+    "isEntry": true
+  },
+  "resources/css/student.blade.css": {
+    "file": "assets/student-CssW5Erq.css",
+    "src": "resources/css/student.blade.css",
+    "isEntry": true
+  },
+  "resources/css/yearlevels.blade.css": {
+    "file": "assets/yearlevels-Cc2zX1lZ.css",
+    "src": "resources/css/yearlevels.blade.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-DspuE8pW.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/delete-modal.js": {
+    "file": "assets/delete-modal-BRdGj4iR.js",
+    "name": "delete-modal",
+    "src": "resources/js/delete-modal.js",
+    "isEntry": true
+  },
+  "resources/js/delete-multiple-modal.js": {
+    "file": "assets/delete-multiple-modal-DZnZ6uEQ.js",
+    "name": "delete-multiple-modal",
+    "src": "resources/js/delete-multiple-modal.js",
+    "isEntry": true
+  },
+  "resources/js/edit-modal.js": {
+    "file": "assets/edit-modal-BrcHgwnS.js",
+    "name": "edit-modal",
+    "src": "resources/js/edit-modal.js",
+    "isEntry": true
+  },
+  "resources/js/edit-multiple-modal.js": {
+    "file": "assets/edit-multiple-modal-DdsNTDaX.js",
+    "name": "edit-multiple-modal",
+    "src": "resources/js/edit-multiple-modal.js",
+    "isEntry": true
+  }
+}
