@@ -1,6 +1,7 @@
 <?php
 
 return [
+    App\Providers\AppServiceProvider::class,
     App\Providers\AccountServiceProvider::class,
     App\Providers\AssignmentServiceProvider::class,
     App\Providers\DepartmentProvider::class,
