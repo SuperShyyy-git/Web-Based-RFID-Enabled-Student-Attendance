@@ -116,6 +116,35 @@ class MachineController
         'scanned_at' => now(),
     ]);
 
+    // ========== AUTO-APPROVE ATTENDANCE ==========
+    // Automatically create an AttendanceClass record with status "Present"
+    // Find the instructor assigned to this student's program/section
+    $instructor = \App\Models\Assignment::where('program_id', $student->program_id)
+        ->where(function ($query) use ($student) {
+            $query->whereNull('section_id')
+                  ->orWhere('section_id', $student->section_id);
+        })
+        ->with('teacher')
+        ->first();
+
+    $instructorName = $instructor && $instructor->teacher
+        ? trim($instructor->teacher->first_name . ' ' . $instructor->teacher->last_name)
+        : 'System';
+
+    \App\Models\AttendanceClass::create([
+        'student_name' => $student->last_name . ', ' . $student->first_name . ' ' . ($student->middle_name ?? ''),
+        'program' => $student->program->program_name ?? '',
+        'section' => $student->section->section_name ?? 'Irregular',
+        'year_level' => $student->yearLevel->year_level_name ?? '',
+        'date' => now()->toDateString(),
+        'time' => now()->toTimeString(),
+        'attendance_status' => 'Present',
+        'instructor' => $instructorName,
+        'action' => $action,
+        'image' => basename($attendanceImagePath),
+    ]);
+    // =============================================
+
     return response()->json([
         'success' => true,
         'message' => $action . ' successful!',

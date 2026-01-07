@@ -34,7 +34,13 @@ try:
     distance = face_recognition.face_distance([stored_encoding], captured_encoding)[0]
 
     # Decide match based on threshold
-    threshold = 0.45  # you can adjust this (0.6 = default, lower = stricter)
+    # Threshold guide:
+    #   0.6  = Default (lenient, may allow similar-looking people)
+    #   0.50 = Moderate (good for general use)
+    #   0.45 = Strict (reduces false positives)
+    #   0.38 = Very strict (recommended for twin environments)
+    #   0.35 = Ultra strict (may cause false rejections for legitimate users)
+    threshold = 0.38  # Adjusted for twin detection - stricter matching
     match = distance < threshold
 
     print(json.dumps({

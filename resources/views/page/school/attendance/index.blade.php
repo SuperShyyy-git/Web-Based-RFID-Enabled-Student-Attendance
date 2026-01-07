@@ -120,7 +120,7 @@
                 <td>{{ $log->student ? $log->student->program->program_name : '-' }}</td>
 
                 <!-- Section -->
-                <td>{{ $log->student ? $log->student->section->section_name : '-' }}</td>
+                <td>{!! $log->student && $log->student->section ? $log->student->section->section_name : '<span class="badge bg-warning text-dark">Irregular</span>' !!}</td>
 
                 <!-- Year Level -->
                 <td>{{ $log->student ? $log->student->yearLevel->year_level_name : '-' }}</td>
@@ -173,7 +173,7 @@
             <!-- Hidden Inputs -->
             <input type="hidden" name="student_name" value="{{ $log->student ? $log->student->last_name . ', ' . $log->student->first_name .' '. $log->student->middle_name : '' }}">
             <input type="hidden" name="program" value="{{ $log->student ? $log->student->program->program_name : '' }}">
-            <input type="hidden" name="section" value="{{ $log->student ? $log->student->section->section_name : '' }}">
+            <input type="hidden" name="section" value="{{ $log->student && $log->student->section ? $log->student->section->section_name : 'Irregular' }}">
             <input type="hidden" name="year_level" value="{{ $log->student ? $log->student->yearLevel->year_level_name : '' }}">
             <input type="hidden" name="date" value="{{ $log->created_at->format('Y-m-d') }}">
             <input type="hidden" name="time" value="{{ $log->created_at->format('H:i:s') }}">

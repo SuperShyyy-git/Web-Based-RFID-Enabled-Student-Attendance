@@ -23,13 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force HTTPS in production to prevent mixed content issues
-        if (app()->environment('production')) {
-            URL::forceScheme('https');
-            
-            // Auto-seed admin user if it doesn't exist
-            $this->seedAdminUser();
-        }
+        //
     }
     
     /**
