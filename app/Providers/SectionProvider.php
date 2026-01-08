@@ -23,21 +23,21 @@ class SectionProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer([
-            'page.school.sections.edit', 
-            'page.school.sections.create', 
-            'page.school.students.create', 
-            'page.school.students.edit', 
-            'page.school.students.delete', 
-            'page.school.students.edit-multiple', 
+            'page.school.sections.edit',
+            'page.school.sections.create',
+            'page.school.students.create',
+            'page.school.students.edit',
+            'page.school.students.delete',
+            'page.school.students.edit-multiple',
             'page.school.students.delete-multiple',
-            'page.school.instructors.create', 
-            'page.school.instructors.edit', 
+            'page.school.instructors.create',
+            'page.school.instructors.edit',
             'page.school.instructors.delete',
         ], function ($view) {
             $sections = Cache::remember('sections_page' . (request('page') ?? 1), now()->addMinutes(30), function () {
-                return  Section::all(); 
+                return Section::select('section_id', 'section_name', 'program_id', 'year_level_id', 'department_id')->get();
             });
-    
+
             $view->with('sections', $sections);
         });
     }

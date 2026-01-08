@@ -23,7 +23,7 @@ class AttendanceController
         $user = Auth::user();
         $instructorId = $user->account_id;
 
-           // ✅ Get all instructors
+        // ✅ Get all instructors
         $instructor = Auth::user();
 
         $perPage = $request->input('count', 5);
@@ -51,20 +51,20 @@ class AttendanceController
         $departments = Department::all();
         $programs = Program::all();
         $sections = Section::all();
-        $yearLevels = YearLevel::all(); 
+        $yearLevels = YearLevel::all();
 
-         $query = RFIDLog::query()
+        $query = RFIDLog::query()
             ->join('student_records', 'rfid_logs.record_id', '=', 'student_records.record_id')
             ->leftJoin('departments', 'student_records.department_id', '=', 'departments.department_id')
             ->leftJoin('programs', 'student_records.program_id', '=', 'programs.program_id')
             ->leftJoin('sections', 'student_records.section_id', '=', 'sections.section_id')
-            ->leftJoin('year_levels', 'student_records.year_level_id', '=', 'year_levels.year_level_id') 
-            ->leftJoin('attendance_classes', function($join) {
+            ->leftJoin('year_levels', 'student_records.year_level_id', '=', 'year_levels.year_level_id')
+            ->leftJoin('attendance_classes', function ($join) {
                 $join->on('student_records.first_name', '=', DB::raw("SUBSTRING_INDEX(attendance_classes.student_name, ',', 1)"))
-                     ->on('student_records.last_name', '=', DB::raw("TRIM(SUBSTRING_INDEX(attendance_classes.student_name, ',', -1))"))
-                     ->whereColumn('programs.program_name', 'attendance_classes.program')
-                     ->whereColumn('sections.section_name', 'attendance_classes.section')
-                     ->whereColumn('year_levels.year_level_name', 'attendance_classes.year_level');
+                    ->on('student_records.last_name', '=', DB::raw("TRIM(SUBSTRING_INDEX(attendance_classes.student_name, ',', -1))"))
+                    ->whereColumn('programs.program_name', 'attendance_classes.program')
+                    ->whereColumn('sections.section_name', 'attendance_classes.section')
+                    ->whereColumn('year_levels.year_level_name', 'attendance_classes.year_level');
             })
             ->select(
                 'rfid_logs.*',
@@ -76,10 +76,9 @@ class AttendanceController
                 'programs.program_id',
                 'sections.section_name',
                 'sections.section_id',
-                'year_levels.year_level_name', 
-                'year_levels.year_level_id',    
-                'attendance_classes.remarks',
-                'attendance_classes.instructor'  
+                'year_levels.year_level_name',
+                'year_levels.year_level_id',
+                'attendance_classes.instructor'
             );
         if ($user->role !== 'Admin') {
             $assignments = DB::table('assignments')
@@ -174,43 +173,43 @@ class AttendanceController
         $query->orderBy($sortBy, $sortOrder);
 
         $logs = $query->paginate($perPage)->appends($request->query());
-         $instructor = Auth::user();
+        $instructor = Auth::user();
 
-        return view('page.school.attendance.index', compact('logs', 'departments', 'programs', 'sections', 'yearLevels', 'instructor',)); // <- added yearLevels
+        return view('page.school.attendance.index', compact('logs', 'departments', 'programs', 'sections', 'yearLevels', 'instructor', )); // <- added yearLevels
     }
     public function approve(Request $request)
-{
-    $request->validate([
-        'student_name' => 'required|string',
-        'program' => 'required|string',
-        'section' => 'required|string',
-        'year_level' => 'required|string',
-        'date' => 'required|date',
-        'time' => 'required',
-        'attendance_status' => 'required|string',
-        'instructor' => 'required|string',
-        'action' => 'required|string',
-        'image' => 'nullable|string',
-        //  'remarks' => 'required|string',
-    ]);
+    {
+        $request->validate([
+            'student_name' => 'required|string',
+            'program' => 'required|string',
+            'section' => 'required|string',
+            'year_level' => 'required|string',
+            'date' => 'required|date',
+            'time' => 'required',
+            'attendance_status' => 'required|string',
+            'instructor' => 'required|string',
+            'action' => 'required|string',
+            'image' => 'nullable|string',
+            //  'remarks' => 'required|string',
+        ]);
 
-    $account = Auth::user();
+        $account = Auth::user();
         $instructorName = trim("{$account->first_name} {$account->last_name}");
 
-    AttendanceClass::create([
-        'student_name'       => $request->student_name,
-        'program'            => $request->program,
-        'section'            => $request->section,
-        'year_level'         => $request->year_level,
-        'date'               => $request->date,
-        'time'               => $request->time,
-        'attendance_status'  => $request->attendance_status,
-        'instructor'         => $instructorName,
-        'action'             => $request->action,
-        'image'              => $request->image,
-        // 'remarks'            => $request->remarks,
-    ]);
+        AttendanceClass::create([
+            'student_name' => $request->student_name,
+            'program' => $request->program,
+            'section' => $request->section,
+            'year_level' => $request->year_level,
+            'date' => $request->date,
+            'time' => $request->time,
+            'attendance_status' => $request->attendance_status,
+            'instructor' => $instructorName,
+            'action' => $request->action,
+            'image' => $request->image,
+            // 'remarks'            => $request->remarks,
+        ]);
 
-    return back()->with('success', 'Attendance approved and saved!');
-}
+        return back()->with('success', 'Attendance approved and saved!');
+    }
 }
